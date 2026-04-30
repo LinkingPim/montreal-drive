@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>De Montréal-drive – Bridge Escaperoom</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1d3557 0%, #457b9d 50%, #a8dadc 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px 40px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .topbar-label {
+    font-size: 12px;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .score-badge {
+    background: #f4a019;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .progress-track {
+    background: #e9ecef;
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f4a019, #e8520a);
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+
+  .loc-map {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .loc-stop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    transition: opacity 0.3s;
+  }
+  .loc-icon {
+    font-size: 22px;
+    border-radius: 10px;
+    padding: 6px 10px;
+    transition: all 0.3s;
+  }
+  .loc-label {
+    font-size: 9px;
+    color: #666;
+    text-align: center;
+    max-width: 60px;
+  }
+
+  .loc-header {
+    background: linear-gradient(135deg, #1d3557 60%, #457b9d);
+    color: #fff;
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  }
+  .loc-header-emoji { font-size: 32px; }
+  .loc-header-sub { font-size: 11px; opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; }
+  .loc-header-name { font-size: 18px; font-weight: 700; }
+
+  .challenge-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1d3557;
+    margin-bottom: 12px;
+    font-family: Georgia, serif;
+  }
+
+  .story-box {
+    background: #fffbf0;
+    border: 2px solid #f4d06f;
+    border-radius: 12px;
+    padding: 18px 18px 14px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #3d2c00;
+    font-style: italic;
+    position: relative;
+  }
+  .story-label {
+    position: absolute;
+    top: -13px;
+    left: 14px;
+    background: #f4a019;
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .question-box {
+    background: #1d3557;
+    color: #fff;
+    border-radius: 12px;
+    padding: 13px 18px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    line-height: 1.65;
+    font-weight: 500;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+
+  .option-btn {
+    background: #fff;
+    border: 2px solid #dee2e6;
+    color: #212529;
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.6;
+    font-family: inherit;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .option-btn:hover:not([disabled]) {
+    border-color: #42a5f5;
+    background: #e3f2fd;
+    color: #0d47a1;
+    transform: scale(1.01);
+  }
+  .option-btn.selected {
+    border-color: #42a5f5;
+    background: #e3f2fd;
+    color: #0d47a1;
+    font-weight: 600;
+    transform: scale(1.01);
+    box-shadow: 0 2px 10px rgba(66,165,245,0.25);
+  }
+  .option-btn.correct {
+    border-color: #66bb6a !important;
+    background: #e8f5e9 !important;
+    color: #1b5e20 !important;
+    font-weight: 600;
+  }
+  .option-btn.wrong {
+    border-color: #ef9a9a !important;
+    background: #ffebee !important;
+    color: #b71c1c !important;
+  }
+  .option-btn[disabled] { cursor: default; transform: none !important; }
+  .option-letter { font-weight: 700; margin-right: 8px; opacity: 0.5; }
+
+  .feedback {
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    animation: fadeIn 0.4s ease;
+  }
+  .feedback.correct { background: #e8f5e9; border: 2px solid #66bb6a; color: #1b5e20; }
+  .feedback.wrong   { background: #fff3e0; border: 2px solid #ffa726; color: #7c4d00; }
+
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #f4a019, #e8520a);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 16px rgba(244,160,25,0.4);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .btn-primary:hover:not([disabled]) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(244,160,25,0.5);
+  }
+  .btn-primary[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .btn-retry { background: linear-gradient(135deg, #ff7043, #e53935); box-shadow: 0 4px 16px rgba(229,57,53,0.35); }
+
+  /* Suit kleuren */
+  .sr  { color: #e63946; font-weight: 700; }
+  .sb  { color: #1d3557; font-weight: 700; }
+  .sg  { color: #2e7d32; font-weight: 700; }
+  .srl { color: #ff6b6b; font-weight: 700; }
+  .sbl { color: #90caf9; font-weight: 700; }
+  .sgl { color: #a5d6a7; font-weight: 700; }
+
+  /* Intro / finish */
+  .center-card { text-align: center; max-width: 520px; margin: 0 auto; }
+  .big-emoji { font-size: 64px; margin-bottom: 12px; }
+  .page-title { font-size: 26px; font-weight: 900; color: #1d3557; margin-bottom: 8px; font-family: Georgia, serif; }
+  .page-sub { color: #555; font-size: 15px; line-height: 1.7; margin-bottom: 12px; }
+  .info-box { background: #f0f4ff; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; font-size: 13px; color: #1d3557; text-align: left; }
+  .info-box ul { margin: 8px 0 0; padding-left: 18px; line-height: 2; }
+  .summary-box { background: #e8f5e9; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 14px; color: #1b5e20; text-align: left; line-height: 2; }
+  .score-big { font-size: 36px; font-weight: 900; color: #f4a019; margin-bottom: 4px; }
+  .score-pct { color: #666; margin-bottom: 16px; font-size: 14px; }
+
+  /* Biedschema tabel in intro */
+  .bid-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; text-align: left; }
+  .bid-table td { padding: 5px 8px; border-bottom: 1px solid #dde3f0; }
+  .bid-table tr:last-child td { border-bottom: none; }
+  .bid-table td:first-child { font-weight: 700; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+
+<script>
+// ─── LOCATIES ────────────────────────────────────────────────────────────────
+const LOCATIONS = [
+  { id: "start",  name: "Het Centraal Station", emoji: "🚂" },
+  { id: "cafe1",  name: "Café De Klavertjes",    emoji: "☕" },
+  { id: "cafe2",  name: "Brasserie Le Relay",    emoji: "🍺" },
+  { id: "cafe3",  name: "Grand Café De Ruiten",  emoji: "🥂" },
+  { id: "finale", name: "De Trofeehal",          emoji: "🏆" },
+];
+
+// ─── VRAGEN (uitsluitend gebaseerd op het Montreal relay document) ────────────
+const CHALLENGES = [
+
+  // ── STATION: wat is de kern van Montreal relay? ──
+  {
+    id:0, location:"start",
+    title:"Het mysterie van de Montréal-sleutel",
+    story:'Je staat op het Centraal Station. De bridgedrive begint om 14:00. Een oude heer duwt je een flyer in handen: "Zonder de Montreal relay te begrijpen kom je hier niet door het tourniquet."',
+    question:"Na een 1♣-opening (kan een 2-kaart zijn): wat toont antwoorder met 1♦?",
+    options:[
+      "Minimaal 5-kaart ruiten",
+      "1 of 2 keer een 4-kaart hoge kleur (♥ of ♠)",
+      "Minimaal 5-kaart harten",
+      "Geen hoge 4- of 5-kaart, 6–9 punten",
+    ],
+    correct:1,
+    feedback:{
+      wrong:"Bijna! Volgens de Montreal relay betekent 1♦ op een 1♣-opening: antwoorder heeft 1 of 2 keer een 4-kaart hoge kleur (♥ of/en ♠). Het gaat dus niet om ruiten, maar om hoge kleuren.",
+      right:"Juist! 1♦ = 1 of 2× een 4-kaart hoog. Het tourniquet zwaait open. Welkom op de drive!",
+    },
+  },
+
+  // ── STATION: 1♥ antwoord ──
+  {
+    id:1, location:"start",
+    title:"Het mysterie van de Montréal-sleutel – deel 2",
+    story:'"Goed. Maar er is nog een vraag voor je het perron op mag," zegt de conducteur.',
+    question:"Na een 1♣-opening: wat toont antwoorder met 1♥?",
+    options:[
+      "1 of 2 keer een 4-kaart hoge kleur",
+      "Minimaal 5-kaart harten",
+      "Geen hoge kleur, 6–9 punten",
+      "Minimaal 5-kaart schoppen",
+    ],
+    correct:1,
+    feedback:{
+      wrong:"Let op: 1♦ is het antwoord voor 4-kaart hoog. Het antwoord 1♥ betekent iets anders: minimaal 5-kaart harten. Dit dient gealerteerd te worden.",
+      right:"Precies! 1♥ = minimaal 5-kaart harten. De conducteur knikt. Het perron ligt open.",
+    },
+  },
+
+  // ── CAFÉ 1: 1♠ antwoord ──
+  {
+    id:2, location:"cafe1",
+    title:"Café De Klavertjes – Tafel 1",
+    story:'Het ruikt naar koffie. De barman zet twee kopjes neer: "Eerst de vraag, dan de koffie."',
+    question:"Na een 1♣-opening: wat toont antwoorder met 1♠?",
+    options:[
+      "1 of 2 keer een 4-kaart hoge kleur",
+      "Minimaal 5-kaart harten",
+      "Minimaal 5-kaart schoppen",
+      "Geen hoge kleur, balanshand",
+    ],
+    correct:2,
+    feedback:{
+      wrong:"1♠ lijkt op schoppen, en dat klopt: 1♠ = minimaal 5-kaart schoppen. Net als 1♥ dient dit antwoord gealerteerd te worden.",
+      right:"Goed! 1♠ = minimaal 5-kaart schoppen. De koffie wordt neergezet.",
+    },
+  },
+
+  // ── CAFÉ 1: 1SA antwoord ──
+  {
+    id:3, location:"cafe1",
+    title:"Café De Klavertjes – Tafel 2",
+    story:'"Ze houden ons in de gaten," fluistert je partner. "Geen fouten meer."',
+    question:"Na een 1♣-opening: wat toont antwoorder met 1SA?",
+    options:[
+      "Geen hoge 4- of 5-kaart, 6–9 punten (kan wel 5-kaart ♣ of ♦ bevatten)",
+      "Geen hoge 4- of 5-kaart, 10–11 punten",
+      "Geen hoge 4- of 5-kaart, 12+ punten",
+      "Balanshand met stoppers in alle kleuren",
+    ],
+    correct:0,
+    feedback:{
+      wrong:"1SA na een 1♣-opening in Montreal relay = geen hoge 4- of 5-kaart, 6–9 punten. De hand kan wel 5-kaart klaveren of ruiten bevatten. Dit antwoord dient gealerteerd te worden.",
+      right:"Juist! 1SA = geen hoge kleur, 6–9 punten. Kan 5-kaart ♣ of ♦ bevatten. Dit moet gealerteerd worden.",
+    },
+  },
+
+  // ── CAFÉ 1: 2SA antwoord ──
+  {
+    id:4, location:"cafe1",
+    title:"Café De Klavertjes – De Codekluis",
+    story:'"Achter de bar hangt een safe. Geef me het juiste antwoord en ik geef je de route naar de brasserie."',
+    question:"Na een 1♣-opening: wat toont antwoorder met 2SA?",
+    options:[
+      "Geen hoge 4- of 5-kaart, 6–9 punten",
+      "Geen hoge 4- of 5-kaart, 10–11 punten (limiet voor 3SA)",
+      "Geen hoge 4- of 5-kaart, 12+ punten",
+      "Balanshand met 15–17 punten",
+    ],
+    correct:1,
+    feedback:{
+      wrong:"2SA na 1♣ in Montreal relay = geen hoge 4- of 5-kaart, 10–11 punten. Het is een limietbod naar 3SA. Dat is sterker dan 1SA (6–9) maar zwakker dan 3SA (12+).",
+      right:"Correct! 2SA = geen hoge kleur, 10–11 punten — de limiet voor 3SA. De safe springt open!",
+    },
+  },
+
+  // ── BRASSERIE: 3SA antwoord ──
+  {
+    id:5, location:"cafe2",
+    title:"Brasserie Le Relay – Ingang",
+    story:'"Hier kom je alleen in als je het complete antwoordschema kent," zegt de portier.',
+    question:"Na een 1♣-opening: wat toont antwoorder met 3SA?",
+    options:[
+      "Geen hoge 4- of 5-kaart, 10–11 punten",
+      "Geen hoge 4- of 5-kaart, 12+ punten — om direct 3SA te spelen",
+      "Balanshand met stoppers, ongeacht punten",
+      "Sterk eenkleurenspel in een lage kleur",
+    ],
+    correct:1,
+    feedback:{
+      wrong:"3SA na 1♣ in Montreal relay = geen hoge 4- of 5-kaart, 12+ punten. Antwoorder wil direct 3SA spelen. Sterker dan 2SA (10–11) en sterker dan 1SA (6–9).",
+      right:'Precies! 3SA = geen hoge kleur, 12+ punten, direct naar het eindcontract. De portier stapt opzij. "Welkom!"',
+    },
+  },
+
+  // ── BRASSERIE: wat is GEEN onderdeel van de conventie ──
+  {
+    id:6, location:"cafe2",
+    title:"Brasserie Le Relay – Het biermat-raadsel",
+    story:'"Op dit biermat staat een bewering. Klopt die of niet?" vraagt de ober.',
+    question:"Stel: Noord opent 1♣ omdat hij een 4-kaart schoppen heeft. Hij noemt dit Montreal relay. Is dit correct?",
+    options:[
+      "Ja, Montreal relay gaat over de opening van 1♣",
+      "Nee, Montreal relay gaat uitsluitend over de antwoorden op een 1♣-opening — niet over de hand van de opener",
+      "Ja, als opener een hoge vierkaart heeft mag hij altijd 1♣ openen en dat Montreal relay noemen",
+      "Dat hangt af van de verdeling van de hand",
+    ],
+    correct:1,
+    feedback:{
+      wrong:'Dit is een veelgemaakte fout! Het document stelt expliciet: "Het gaat bij Montreal relay dus niet om de hand van de opener." De conventie beschrijft uitsluitend het antwoordschema op een 1♣-opening.',
+      right:'Precies! De naam "relay" zegt het al: het is een antwoord op een bieding, een vervolg op de 1♣-opening. De opener doet er niet aan mee.',
+    },
+  },
+
+  // ── BRASSERIE: openingsfout herkennen ──
+  {
+    id:7, location:"cafe2",
+    title:"Brasserie Le Relay – De achterdeur",
+    story:'"Om naar Grand Café De Ruiten te komen, moet je deze situatie beoordelen," zegt de uitbater.',
+    question:"Speler A heeft: ♠4 ♥4 ♦5 ♣2 (verdeling 2-4-5-2). Hij opent 1♣ met als reden dat hij een 4-kaart harten heeft, en zet op zijn systeemkaart Montreal relay. Wat is hier mis?",
+    options:[
+      "Niets, dit is toegestaan bij Montreal relay",
+      "Met een 5-kaart ruiten open je met 1♦, niet 1♣ — en de opening heeft niets met Montreal relay te maken",
+      "Hij had moeten passen want hij heeft te weinig punten",
+      "De verdeling klopt niet bij een 1♣-opening",
+    ],
+    correct:1,
+    feedback:{
+      wrong:'Het document noemt dit als een "grote misvatting". Met een 5-kaart ruiten open je met 1♦, niet 1♣. Bovendien heeft Montreal relay niets te maken met de openingshand. Op de systeemkaart Montreal relay noteren voor deze opening is volgens de wedstrijdspelregels verboden.',
+      right:"Exact! Met een langere ruiten open je 1♦. De opening heeft bovendien niets met Montreal relay te maken. De achterdeur gaat open!",
+    },
+  },
+
+  // ── GRAND CAFÉ: 1♦ met twee 4-kaarten ──
+  {
+    id:8, location:"cafe3",
+    title:"Grand Café De Ruiten – Eerste proef",
+    story:'"Nu wordt het écht moeilijk," zegt de drive-leider. Hij legt een hand op tafel.',
+    question:"Antwoorder heeft: ♠KJ74 ♥Q852 ♦93 ♣K64 (10 punten, 4♠ en 4♥). Partner opent 1♣. Wat biedt antwoorder?",
+    options:[
+      "1♥ (5-kaart harten tonen)",
+      "1♦ (1 of 2× een 4-kaart hoge kleur)",
+      "1SA (geen hoge kleur, 6–9 punten)",
+      "2SA (geen hoge kleur, 10–11 punten)",
+    ],
+    correct:1,
+    feedback:{
+      wrong:"Antwoorder heeft twee 4-kaart hoge kleuren (♥ en ♠) maar geen vijfkaart. In Montreal relay bied je dan 1♦: dat signaleert 1 of 2 keer een 4-kaart hoge kleur. 1♥ zou een vijfkaart harten beloven.",
+      right:"Juist! 1♦ = 1 of 2× een 4-kaart hoog. Opener weet nu dat er hoge kleuren aanwezig zijn en kan verder vragen.",
+    },
+  },
+
+  // ── GRAND CAFÉ: 1SA situatie herkennen ──
+  {
+    id:9, location:"cafe3",
+    title:"Grand Café De Ruiten – De spiegel",
+    story:'"Vertrouw alleen de bieding," fluistert een stem achter de spiegel.',
+    question:"Antwoorder heeft: ♠63 ♥72 ♦KJ875 ♣Q94 (8 punten, 5-kaart ruiten). Partner opent 1♣. Wat biedt antwoorder?",
+    options:[
+      "1♦ (ik heb een 4-kaart hoge kleur)",
+      "1♥ of 1♠ (hoge kleur tonen)",
+      "1SA (geen hoge 4- of 5-kaart, 6–9 punten — kan 5-kaart ruiten bevatten)",
+      "2♦ (ruiten tonen)",
+    ],
+    correct:2,
+    feedback:{
+      wrong:"Antwoorder heeft geen hoge kleur (geen 4- of 5-kaart ♥/♠). Hij biedt 1SA: geen hoge 4- of 5-kaart, 6–9 punten. Het document vermeldt expliciet dat 1SA een 5-kaart ♦ kán bevatten. 1♦ zou namelijk een hoge kleur beloven — dat is verwarrend.",
+      right:"Correct! 1SA kan ook een 5-kaart ruiten bevatten — dat staat letterlijk in de conventie. Geen hoge kleur, 6–9 punten.",
+    },
+  },
+
+  // ── GRAND CAFÉ: slotpuzzel ──
+  {
+    id:10, location:"cafe3",
+    title:"Grand Café De Ruiten – De slotpuzzel",
+    story:'"Vijf sloten op de deur naar de Trofeehal. Elk slot is een vraag."',
+    question:"Welke antwoorden in Montreal relay moeten gealerteerd worden?",
+    options:[
+      "Alleen 1♦",
+      "1♦, 1♥, 1♠ en 1SA",
+      "Alle antwoorden inclusief 2SA en 3SA",
+      "Geen enkel antwoord hoeft gealerteerd te worden",
+    ],
+    correct:1,
+    feedback:{
+      wrong:'Het document noemt expliciet: 1♦, 1♥, 1♠ en 1SA dienen gealerteerd te worden (met een *). 2SA en 3SA staan niet in de alerteringslijst.',
+      right:"Precies! 1♦, 1♥, 1♠ en 1SA worden gealerteerd — dit staat letterlijk in het document. Alle sloten klikken open!",
+    },
+  },
+
+  // ── FINALE ──
+  {
+    id:11, location:"finale",
+    title:"De Trofeehal – De Finale",
+    story:'"Honderden bridgespelers applaudisseren. De trofee ligt op tafel. Nog één vraag."',
+    question:"Wat is de kern van de Montreal relay-conventie in één zin?",
+    options:[
+      "Opener biedt 1♣ als hij een hoge vierkaart heeft",
+      "Antwoorder geeft na een 1♣-opening direct aan of hij een 4- of 5-kaart hoge kleur heeft, of juist geen hoge kleur — via een vast antwoordschema",
+      "Het is een openingssysteem waarbij 1♣ altijd een korte klaver belooft",
+      "Opener en antwoorder wisselen informatie uit over alle vier kleuren",
+    ],
+    correct:1,
+    feedback:{
+      wrong:'Net niet! Montreal relay gaat uitsluitend over de antwoorden op 1♣. Het document: "Het gaat bij Montreal relay dus niet om de hand van de opener." Het antwoordschema toont of antwoorder een 4- of 5-kaart hoge kleur heeft, of geen hoge kleur.',
+      right:"🏆 Perfect! De drive-directeur overhandigt de trofee. Jij hebt de Montréal-drive gewonnen!",
+    },
+  },
+];
+
+// ── STATE ──
+let state = { screen:"intro", step:0, selected:null, submitted:false, wrongAttempts:0, score:0 };
+
+// ── SUIT KLEUREN ──
+function suit(text, dark) {
+  return text.replace(/([♥♦♠♣])/g, (m, s) => {
+    if (s==="♥"||s==="♦") return `<span class="${dark?"srl":"sr"}">${s}</span>`;
+    if (s==="♠") return `<span class="${dark?"sbl":"sb"}">${s}</span>`;
+    if (s==="♣") return `<span class="${dark?"sgl":"sg"}">${s}</span>`;
+    return s;
+  });
+}
+function locIdx(id) { return LOCATIONS.findIndex(l=>l.id===id); }
+
+// ── RENDER ──
+function render() {
+  const app = document.getElementById("app");
+  if (state.screen==="intro") app.innerHTML = renderIntro();
+  else if (state.screen==="finish") app.innerHTML = renderFinish();
+  else app.innerHTML = renderGame();
+  bindEvents();
+}
+
+function renderIntro() {
+  return `<div class="center-card">
+    <div class="big-emoji">🃏</div>
+    <h1 class="page-title">De Montréal-drive</h1>
+    <p class="page-sub">Een bridgedrive door de stad. Vier locaties. Twaalf uitdagingen.<br>Leer de Montreal relay-conventie terwijl je de trofee verovert.</p>
+    <div class="info-box">
+      <strong>📋 Het antwoordschema (na 1♣-opening):</strong>
+      <table class="bid-table">
+        <tr><td>Pas</td><td>Minder dan 6 punten</td></tr>
+        <tr><td>1${suit("♦")}</td><td>1 of 2× een 4-kaart hoog (${suit("♥")} en/of ${suit("♠")})</td></tr>
+        <tr><td>1${suit("♥")}</td><td>Minimaal 5-kaart harten ⚡</td></tr>
+        <tr><td>1${suit("♠")}</td><td>Minimaal 5-kaart schoppen ⚡</td></tr>
+        <tr><td>1SA</td><td>Geen hoge 4/5-kaart, 6–9 punten ⚡</td></tr>
+        <tr><td>2SA</td><td>Geen hoge 4/5-kaart, 10–11 punten</td></tr>
+        <tr><td>3SA</td><td>Geen hoge 4/5-kaart, 12+ punten</td></tr>
+      </table>
+      <div style="margin-top:8px;font-size:11px;color:#555">⚡ = alerteren</div>
+    </div>
+    <button class="btn-primary" id="btn-start">🚂 Start de bridgedrive</button>
+  </div>`;
+}
+
+function renderFinish() {
+  const max = CHALLENGES.length * 3;
+  const pct = Math.round((state.score / max) * 100);
+  const medal = pct>=90?"🥇":pct>=70?"🥈":"🥉";
+  return `<div class="center-card">
+    <div style="font-size:72px;margin-bottom:12px">${medal}</div>
+    <h1 class="page-title">Bridgedrive voltooid!</h1>
+    <div class="score-big">${state.score} / ${max}</div>
+    <div class="score-pct">punten (${pct}%)</div>
+    <div class="summary-box">
+      <strong>📚 De kern van Montreal relay:</strong><br>
+      • 1${suit("♦")} = 1 of 2× een <strong>4-kaart</strong> hoog<br>
+      • 1${suit("♥")} = minimaal <strong>5-kaart</strong> harten<br>
+      • 1${suit("♠")} = minimaal <strong>5-kaart</strong> schoppen<br>
+      • 1SA = geen hoge 4/5-kaart, <strong>6–9</strong> punten<br>
+      • 2SA = geen hoge 4/5-kaart, <strong>10–11</strong> punten<br>
+      • 3SA = geen hoge 4/5-kaart, <strong>12+</strong> punten<br>
+      • Montreal relay gaat over de <strong>antwoorden</strong> — niet over de opening!
+    </div>
+    <button class="btn-primary" id="btn-restart">🔄 Opnieuw spelen</button>
+  </div>`;
+}
+
+function renderGame() {
+  const ch = CHALLENGES[state.step];
+  const ci = locIdx(ch.location);
+  const isCorrect = state.selected === ch.correct;
+  const pct = Math.round((state.step / CHALLENGES.length) * 100);
+
+  const mapHtml = LOCATIONS.map((loc,i) => {
+    const isActive = i===ci, isDone = i<ci;
+    const op = (isActive||isDone)?1:0.35;
+    const bg = isDone?"#66bb6a":isActive?"#f4a019":"#ddd";
+    const sh = isActive?"0 0 0 3px rgba(244,160,25,0.4)":"none";
+    return `<div class="loc-stop" style="opacity:${op}">
+      <div class="loc-icon" style="background:${bg};box-shadow:${sh}">${loc.emoji}</div>
+      <div class="loc-label">${loc.name.split(" ").pop()}</div>
+    </div>`;
+  }).join("");
+
+  const optHtml = ch.options.map((opt,idx) => {
+    let cls = "option-btn";
+    if (state.submitted) {
+      if (idx===ch.correct) cls+=" correct";
+      else if (idx===state.selected&&!isCorrect) cls+=" wrong";
+    } else if (idx===state.selected) cls+=" selected";
+    const dis = state.submitted?"disabled":"";
+    return `<button class="${cls}" data-idx="${idx}" ${dis}>
+      <span class="option-letter">${["A","B","C","D"][idx]}.</span>${suit(opt)}
+    </button>`;
+  }).join("");
+
+  const fbHtml = state.submitted ? `<div class="feedback ${isCorrect?"correct":"wrong"}">
+    <strong>${isCorrect?"✅ Coach zegt:":"🎓 Coach zegt:"}</strong>
+    ${suit(isCorrect?ch.feedback.right:ch.feedback.wrong)}
+  </div>` : "";
+
+  let actionHtml;
+  if (!state.submitted) {
+    actionHtml = `<button class="btn-primary" id="btn-submit" ${state.selected===null?"disabled":""}>Controleer antwoord →</button>`;
+  } else if (isCorrect) {
+    const last = state.step+1>=CHALLENGES.length;
+    actionHtml = `<button class="btn-primary" id="btn-next">${last?"🏆 Claim de trofee!":"Volgende →"}</button>`;
+  } else {
+    actionHtml = `<button class="btn-primary btn-retry" id="btn-retry">🔄 Opnieuw proberen</button>`;
+  }
+
+  return `
+    <div class="topbar">
+      <span class="topbar-label">Uitdaging ${state.step+1} van ${CHALLENGES.length}</span>
+      <span class="score-badge">⭐ ${state.score} punten</span>
+    </div>
+    <div class="progress-label"><span>Voortgang</span><span>${state.step}/${CHALLENGES.length}</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="loc-map">${mapHtml}</div>
+    <div class="loc-header">
+      <span class="loc-header-emoji">${LOCATIONS[ci].emoji}</span>
+      <div>
+        <div class="loc-header-sub">Locatie</div>
+        <div class="loc-header-name">${LOCATIONS[ci].name}</div>
+      </div>
+    </div>
+    <h2 class="challenge-title">${ch.title}</h2>
+    <div class="story-box"><span class="story-label">📖 VERHAAL</span>${suit(ch.story)}</div>
+    <div class="question-box">${suit(ch.question, true)}</div>
+    <div class="options">${optHtml}</div>
+    ${fbHtml}
+    ${actionHtml}`;
+}
+
+// ── EVENTS ──
+function bindEvents() {
+  document.querySelectorAll(".option-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (state.submitted) return;
+      state.selected = parseInt(btn.dataset.idx);
+      render();
+    });
+  });
+
+  const s = document.getElementById("btn-start");
+  if (s) s.addEventListener("click", () => { state.screen="game"; render(); });
+
+  const sub = document.getElementById("btn-submit");
+  if (sub) sub.addEventListener("click", () => {
+    if (state.selected===null) return;
+    state.submitted = true;
+    const ch = CHALLENGES[state.step];
+    if (state.selected===ch.correct) state.score += Math.max(3-state.wrongAttempts,1);
+    else state.wrongAttempts++;
+    render();
+  });
+
+  const nxt = document.getElementById("btn-next");
+  if (nxt) nxt.addEventListener("click", () => {
+    if (state.step+1>=CHALLENGES.length) { state.screen="finish"; }
+    else { state.step++; state.selected=null; state.submitted=false; state.wrongAttempts=0; }
+    render();
+  });
+
+  const ret = document.getElementById("btn-retry");
+  if (ret) ret.addEventListener("click", () => { state.selected=null; state.submitted=false; render(); });
+
+  const rs = document.getElementById("btn-restart");
+  if (rs) rs.addEventListener("click", () => {
+    state={screen:"intro",step:0,selected:null,submitted:false,wrongAttempts:0,score:0};
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
