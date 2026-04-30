@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>De Montréal-drive – Bridge Escaperoom</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1d3557 0%, #457b9d 50%, #a8dadc 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px 40px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .topbar-label {
+    font-size: 12px;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .score-badge {
+    background: #f4a019;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .progress-track {
+    background: #e9ecef;
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f4a019, #e8520a);
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+
+  .loc-map {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .loc-stop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    transition: opacity 0.3s;
+  }
+  .loc-icon {
+    font-size: 22px;
+    border-radius: 10px;
+    padding: 6px 10px;
+    transition: all 0.3s;
+  }
+  .loc-label {
+    font-size: 9px;
+    color: #666;
+    text-align: center;
+    max-width: 60px;
+  }
+
+  .loc-header {
+    background: linear-gradient(135deg, #1d3557 60%, #457b9d);
+    color: #fff;
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  }
+  .loc-header-emoji { font-size: 32px; }
+  .loc-header-sub { font-size: 11px; opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; }
+  .loc-header-name { font-size: 18px; font-weight: 700; }
+
+  .challenge-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1d3557;
+    margin-bottom: 12px;
+    font-family: Georgia, serif;
+  }
+
+  .story-box {
+    background: #fffbf0;
+    border: 2px solid #f4d06f;
+    border-radius: 12px;
+    padding: 18px 18px 14px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #3d2c00;
+    font-style: italic;
+    position: relative;
+  }
+  .story-label {
+    position: absolute;
+    top: -13px;
+    left: 14px;
+    background: #f4a019;
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .question-box {
+    background: #1d3557;
+    color: #fff;
+    border-radius: 12px;
+    padding: 13px 18px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    line-height: 1.65;
+    font-weight: 500;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+
+  .option-btn {
+    background: #fff;
+    border: 2px solid #dee2e6;
+    color: #212529;
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.6;
+    font-family: inherit;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .option-btn:hover:not([disabled]) {
+    border-color: #42a5f5;
+    background: #e3f2fd;
+    color: #0d47a1;
+    transform: scale(1.01);
+  }
+  .option-btn.selected {
+    border-color: #42a5f5;
+    background: #e3f2fd;
+    color: #0d47a1;
+    font-weight: 600;
+    transform: scale(1.01);
+    box-shadow: 0 2px 10px rgba(66,165,245,0.25);
+  }
+  .option-btn.correct {
+    border-color: #66bb6a !important;
+    background: #e8f5e9 !important;
+    color: #1b5e20 !important;
+    font-weight: 600;
+  }
+  .option-btn.wrong {
+    border-color: #ef9a9a !important;
+    background: #ffebee !important;
+    color: #b71c1c !important;
+  }
+  .option-btn[disabled] { cursor: default; transform: none !important; }
+  .option-letter { font-weight: 700; margin-right: 8px; opacity: 0.5; }
+
+  .feedback {
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    animation: fadeIn 0.4s ease;
+  }
+  .feedback.correct { background: #e8f5e9; border: 2px solid #66bb6a; color: #1b5e20; }
+  .feedback.wrong   { background: #fff3e0; border: 2px solid #ffa726; color: #7c4d00; }
+
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #f4a019, #e8520a);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 16px rgba(244,160,25,0.4);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .btn-primary:hover:not([disabled]) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(244,160,25,0.5);
+  }
+  .btn-primary[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .btn-retry { background: linear-gradient(135deg, #ff7043, #e53935); box-shadow: 0 4px 16px rgba(229,57,53,0.35); }
+
+  /* Suit kleuren */
+  .sr  { color: #e63946; font-weight: 700; }
+  .sb  { color: #1d3557; font-weight: 700; }
+  .sg  { color: #2e7d32; font-weight: 700; }
+  .srl { color: #ff6b6b; font-weight: 700; }
+  .sbl { color: #90caf9; font-weight: 700; }
+  .sgl { color: #a5d6a7; font-weight: 700; }
+
+  /* Intro / finish */
+  .center-card { text-align: center; max-width: 520px; margin: 0 auto; }
+  .big-emoji { font-size: 64px; margin-bottom: 12px; }
+  .page-title { font-size: 26px; font-weight: 900; color: #1d3557; margin-bottom: 8px; font-family: Georgia, serif; }
+  .page-sub { color: #555; font-size: 15px; line-height: 1.7; margin-bottom: 12px; }
+  .info-box { background: #f0f4ff; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; font-size: 13px; color: #1d3557; text-align: left; }
+  .info-box ul { margin: 8px 0 0; padding-left: 18px; line-height: 2; }
+  .summary-box { background: #e8f5e9; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 14px; color: #1b5e20; text-align: left; line-height: 2; }
+  .score-big { font-size: 36px; font-weight: 900; color: #f4a019; margin-bottom: 4px; }
+  .score-pct { color: #666; margin-bottom: 16px; font-size: 14px; }
+
+  /* Biedschema tabel in intro */
+  .bid-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; text-align: left; }
+  .bid-table td { padding: 5px 8px; border-bottom: 1px solid #dde3f0; }
+  .bid-table tr:last-child td { border-bottom: none; }
+  .bid-table td:first-child { font-weight: 700; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+
+<script>
+// ─── LOCATIES ────────────────────────────────────────────────────────────────
+const LOCATIONS = [
+  { id: "start",  name: "Operatie Montreal",      emoji: "🕵️" },
+  { id: "cafe1",  name: "Safe House Alpha",        emoji: "🔒" },
+  { id: "cafe2",  name: "Casino de la Frontière",  emoji: "🎰" },
+  { id: "cafe3",  name: "Het Archief",             emoji: "📁" },
+  { id: "finale", name: "De Ontmanteling",         emoji: "💣" },
+];
+
+// ─── VRAGEN (uitsluitend gebaseerd op het Montreal relay document) ────────────
+const CHALLENGES = [
+
+  // ── STATION: wat is de kern van Montreal relay? ──
+  {
+    id:0, location:"start",
+    title:"Operatie Montreal – De Briefing",
+    story:'Het is 23:47. Een envelop zonder afzender ligt op je hotelkamer. Erin: een foto van een bridgetafel, coördinaten van een safe house, en drie woorden — "Montreal relay. Nu." Je contactpersoon fluistert door het oortje: "De vijand gebruikt bridgebiedingen als geheime code. Jij bent de enige die het kan ontcijferen. Faal niet."',
+    question:"Na een 1♣-opening (kan een 2-kaart zijn): wat toont antwoorder met 1♦?",
+    options:[
+      "1 of 2 keer een 4-kaart hoge kleur (♥ of ♠)",
+      "Minimaal 5-kaart ruiten",
+      "Geen hoge 4- of 5-kaart, 6–9 punten",
+      "Minimaal 5-kaart harten",
+    ],
+    correct:0,
+    feedback:{
+      wrong:"Niet correct. De vijand wacht niet. In de Montreal relay betekent 1♦ op een 1♣-opening: antwoorder heeft 1 of 2 keer een 4-kaart hoge kleur (♥ en/of ♠). Geen ruiten — hoge kleuren. Probeer opnieuw.",
+      right:"Correct. Je oortje kraakt: \"Goed werk. De eerste laag van de code is gekraakt.\" 1♦ = 1 of 2× een 4-kaart hoog. Ga naar Safe House Alpha.",
+    },
+  },
+
+  // ── STATION: 1♥ antwoord ──
+  {
+    id:1, location:"start",
+    title:"Operatie Montreal – Tweede Laag",
+    story:'Een stem door het oortje: "Wacht. Er is nog een tweede laag in de code. Voordat je het safe house bereikt, moet je dit weten." In de verte rijdt een zwarte sedan langzaam voorbij. Twee keer. Je hebt nog dertig seconden.',
+    question:"Na een 1♣-opening: wat toont antwoorder met 1♥?",
+    options:[
+      "1 of 2 keer een 4-kaart hoge kleur",
+      "Geen hoge kleur, 6–9 punten",
+      "Minimaal 5-kaart schoppen",
+      "Minimaal 5-kaart harten",
+    ],
+    correct:3,
+    feedback:{
+      wrong:"Mis. Let op het verschil: 1♦ signaleert een 4-kaart hoge kleur. Het antwoord 1♥ belooft iets heel anders: minimaal 5-kaart harten. Dit moet je weten voordat je verder gaat.",
+      right:"Goed. 1♥ = minimaal 5-kaart harten. De sedan rijdt door. Je bent niet gevolgd. Safe House Alpha ligt drie straten verderop.",
+    },
+  },
+
+  // ── CAFÉ 1: 1♠ antwoord ──
+  {
+    id:2, location:"cafe1",
+    title:"Safe House Alpha – Verhoor",
+    story:'Het safe house ruikt naar sigarenrook en oude dossiers. Een man in een donker pak zit aan tafel, handen gevouwen. Hij kijkt je aan zonder te knipperen. "Ga zitten," zegt hij. "We weten wie je bent. De vraag is: weet jij genoeg?" Hij schuift een kaart over tafel.',
+    question:"Na een 1♣-opening: wat toont antwoorder met 1♠?",
+    options:[
+      "Geen hoge kleur, balanshand",
+      "1 of 2 keer een 4-kaart hoge kleur",
+      "Minimaal 5-kaart schoppen",
+      "Minimaal 5-kaart harten",
+    ],
+    correct:2,
+    feedback:{
+      wrong:"De man schudt langzaam zijn hoofd. \"Dat is fout.\" 1♠ = minimaal 5-kaart schoppen — net als 1♥ een vijfkaart, maar dan in schoppen. Het is een natuurlijk bod.",
+      right:"De man knikt. Eén keer. \"Je weet wat je doet.\" 1♠ = minimaal 5-kaart schoppen. Natuurlijk bod — geen alertering nodig. Hij schuift een sleutel over tafel.",
+    },
+  },
+
+  // ── CAFÉ 1: 1SA antwoord ──
+  {
+    id:3, location:"cafe1",
+    title:"Safe House Alpha – De Afluisterlijn",
+    story:'De man haalt een recorder tevoorschijn. "We hebben een onderschept gesprek. Twee agenten van de andere kant bespreken een bieding. Eén zegt: 1SA." Hij drukt op play. Statisch geruis. Dan stilte. "Wat betekent dat?" Hij leunt achterover. Buiten begint het te regenen.',
+    question:"Na een 1♣-opening: wat toont antwoorder met 1SA?",
+    options:[
+      "Geen hoge 4- of 5-kaart, 6–9 punten (kan wel 5-kaart ♣ of ♦ bevatten)",
+      "Balanshand met stoppers in alle kleuren",
+      "Geen hoge 4- of 5-kaart, 12+ punten",
+      "Geen hoge 4- of 5-kaart, 10–11 punten",
+    ],
+    correct:0,
+    feedback:{
+      wrong:"\"Fout.\" De recorder stopt. \"1SA na een 1♣-opening betekent: geen hoge 4- of 5-kaart, 6–9 punten. De hand kán wel 5-kaart klaveren of ruiten bevatten. Het is een natuurlijk bod.\"",
+      right:"\"Correct.\" Hij zet de recorder uit. \"1SA = geen hoge kleur, 6–9 punten. Kan 5-kaart ♣ of ♦ bevatten. Natuurlijk bod — geen alertering nodig.\" Hij staat op. \"Volgende kamer.\"",
+    },
+  },
+
+  // ── CAFÉ 1: 2SA antwoord ──
+  {
+    id:4, location:"cafe1",
+    title:"Safe House Alpha – De Kluis",
+    story:'In de achterkamer staat een stalen kluis. De combinatie is een bridgeantwoord. "2SA," zegt je contactpersoon door het oortje. "Dat is de sleutel. Maar wat betekent het precies?" Je vingers zweven boven het toetsenbord. Ergens in het gebouw gaat een deur open.',
+    question:"Na een 1♣-opening: wat toont antwoorder met 2SA?",
+    options:[
+      "Geen hoge 4- of 5-kaart, 6–9 punten",
+      "Geen hoge 4- of 5-kaart, 12+ punten",
+      "Geen hoge 4- of 5-kaart, 10–11 punten (limiet voor 3SA)",
+      "Balanshand met 15–17 punten",
+    ],
+    correct:2,
+    feedback:{
+      wrong:"De kluis blijft dicht. Voetstappen naderen. \"2SA na 1♣ = geen hoge 4- of 5-kaart, 10–11 punten. Limietbod naar 3SA. Sterker dan 1SA, zwakker dan 3SA. Probeer opnieuw — snel.\"",
+      right:"Een zware klik. De kluis zwaait open. Erin: een dossier met het opschrift CASINO DE LA FRONTIÈRE. \"2SA = geen hoge kleur, 10–11 punten,\" mompel je. De voetstappen stoppen.",
+    },
+  },
+
+  // ── BRASSERIE: 3SA antwoord ──
+  {
+    id:5, location:"cafe2",
+    title:"Casino de la Frontière – De Entree",
+    story:'Het casino ligt aan de grens. Kaarsen, fluweel, mensen die fluisteren. Aan de deur staat een bewaker in smoking. Hij kijkt je aan en zegt zacht: "De code voor vanavond is 3SA. Vertel me wat dat betekent in het systeem — dan laat ik je door." Achter hem: de speelzaal. Ergens daarbinnen bevindt zich het doelwit.',
+    question:"Na een 1♣-opening: wat toont antwoorder met 3SA?",
+    options:[
+      "Geen hoge 4- of 5-kaart, 10–11 punten",
+      "Balanshand met stoppers, ongeacht punten",
+      "Sterk eenkleurenspel in een lage kleur",
+      "Geen hoge 4- of 5-kaart, 12+ punten — om direct 3SA te spelen",
+    ],
+    correct:3,
+    feedback:{
+      wrong:"De bewaker beweegt niet. \"Fout antwoord.\" 3SA na 1♣ = geen hoge 4- of 5-kaart, 12+ punten. Antwoorder wil direct 3SA spelen. Sterker dan 2SA. Probeer opnieuw.",
+      right:"De bewaker stapt opzij. \"3SA = geen hoge kleur, 12+ punten, direct naar het eindcontract.\" Hij opent de deur. De speelzaal davert van gedempte gesprekken.",
+    },
+  },
+
+  // ── BRASSERIE: wat is GEEN onderdeel van de conventie ──
+  {
+    id:6, location:"cafe2",
+    title:"Casino de la Frontière – Het Doelwit",
+    story:'Aan een tafel in de hoek zit een man in een wit pak. Hij speelt bridge. Je contactpersoon fluistert: "Dat is Kolonel V. Hij verspreidt verkeerde informatie over de Montreal relay — opzettelijk. Hij beweert dat je 1♣ opent als je een hoge vierkaart hebt." Je moet weten of hij liegt.',
+    question:"Stel: Noord opent 1♣ omdat hij een 4-kaart schoppen heeft. Hij noemt dit Montreal relay. Is dit correct?",
+    options:[
+      "Ja, Montreal relay gaat over de opening van 1♣",
+      "Dat hangt af van de verdeling van de hand",
+      "Nee, Montreal relay gaat uitsluitend over de antwoorden op een 1♣-opening — niet over de hand van de opener",
+      "Ja, als opener een hoge vierkaart heeft mag hij altijd 1♣ openen en dat Montreal relay noemen",
+    ],
+    correct:2,
+    feedback:{
+      wrong:"Kolonel V glimlacht. Hij weet dat je twijfelt. De conventie beschrijft uitsluitend het antwoordschema — niet de hand van de opener. \"Het gaat bij Montreal relay dus niet om de hand van de opener.\" Hij liegt.",
+      right:"Je kijkt hem recht aan. Hij liegt. Montreal relay gaat over de antwoorden — nooit over de openingshand. De naam zegt het al: relay is een antwoord op een bieding. Kolonel V verbleekt.",
+    },
+  },
+
+  // ── BRASSERIE: openingsfout herkennen ──
+  {
+    id:7, location:"cafe2",
+    title:"Casino de la Frontière – Confrontatie",
+    story:'Kolonel V staat op. "Je weet niets," sist hij. Hij schuift een dossier over tafel — een hand met verdeling 2-4-5-2. "Deze speler opende 1♣ omdat hij een 4-kaart harten heeft. Hij noemde het Montreal relay. Wat zeg jij?" Zijn hand glijdt naar zijn binnenzak. Je hebt één kans.',
+    question:"Speler A heeft: ♠4 ♥4 ♦5 ♣2 (verdeling 2-4-5-2). Hij opent 1♣ met als reden dat hij een 4-kaart harten heeft, en zet op zijn systeemkaart Montreal relay. Wat is hier mis?",
+    options:[
+      "Met een 5-kaart ruiten open je met 1♦, niet 1♣ — en de opening heeft niets met Montreal relay te maken",
+      "Niets, dit is toegestaan bij Montreal relay",
+      "De verdeling klopt niet bij een 1♣-opening",
+      "Hij had moeten passen want hij heeft te weinig punten",
+    ],
+    correct:0,
+    feedback:{
+      wrong:"Kolonel V grijpt zijn kans. \"Zie je wel.\" Met een 5-kaart ruiten open je 1♦, niet 1♣. En de opening heeft hoe dan ook niets met Montreal relay te maken. Dat staat woordelijk in de regels. Probeer opnieuw.",
+      right:"\"Dat is onjuist,\" zeg je kalm. \"Met een 5-kaart ruiten open je 1♦. En Montreal relay gaat nooit over de openingshand.\" Kolonel V laat het dossier los. Zijn bluf is gekraakt. Bewakers nemen hem mee.",
+    },
+  },
+
+  // ── GRAND CAFÉ: 1♦ met twee 4-kaarten ──
+  {
+    id:8, location:"cafe3",
+    title:"Het Archief – Dossier 8",
+    story:'Het archief ligt drie verdiepingen onder het casino. Tl-licht. Metalen kasten vol dossiers. Je vindt het juiste dossier: een hand, 10 punten, 4♠ en 4♥. Bovenaan staat: "Wat biedt antwoorder op 1♣?" Ergens boven je klinkt een alarm. Je hebt weinig tijd.',
+    question:"Antwoorder heeft: ♠KJ74 ♥Q852 ♦93 ♣K64 (10 punten, 4♠ en 4♥). Partner opent 1♣. Wat biedt antwoorder?",
+    options:[
+      "1♥ (5-kaart harten tonen)",
+      "1SA (geen hoge kleur, 6–9 punten)",
+      "2SA (geen hoge kleur, 10–11 punten)",
+      "1♦ (1 of 2× een 4-kaart hoge kleur)",
+    ],
+    correct:3,
+    feedback:{
+      wrong:"Het alarm zwelt aan. \"Fout.\" Met twee 4-kaart hoge kleuren maar geen vijfkaart bied je 1♦ — dat signaleert 1 of 2 keer een 4-kaart hoge kleur. 1♥ zou een vijfkaart harten beloven. Probeer opnieuw.",
+      right:"Je schrijft het antwoord in het dossier. 1♦ = 1 of 2× een 4-kaart hoog. Het alarm stopt. Stilte. Je ademt uit.",
+    },
+  },
+
+  // ── GRAND CAFÉ: 1SA situatie herkennen ──
+  {
+    id:9, location:"cafe3",
+    title:"Het Archief – De Valstrik",
+    story:'Een tweede dossier. Bovenaan een rode stempel: MISLEIDING. Een hand met 8 punten en 5-kaart ruiten — geen hoge kleur. "Dit is de valstrik die de vijand gebruikt," staat er. "Agenten bieden hier foutief 1♦ en verraden zo hun positie." Wat is het correcte antwoord?',
+    question:"Antwoorder heeft: ♠63 ♥72 ♦KJ875 ♣Q94 (8 punten, 5-kaart ruiten). Partner opent 1♣. Wat biedt antwoorder?",
+    options:[
+      "2♦ (ruiten tonen)",
+      "1♥ of 1♠ (hoge kleur tonen)",
+      "1SA (geen hoge 4- of 5-kaart, 6–9 punten — kan 5-kaart ruiten bevatten)",
+      "1♦ (ik heb een 4-kaart hoge kleur)",
+    ],
+    correct:2,
+    feedback:{
+      wrong:"De valstrik werkt. \"Fout.\" Geen hoge kleur betekent 1SA — geen 1♦. 1♦ belooft een 4-kaart hoge kleur. 1SA = geen hoge 4- of 5-kaart, 6–9 punten. De hand kán wel 5-kaart ruiten bevatten — dat staat letterlijk in de regels.",
+      right:"Je trapt er niet in. 1SA = geen hoge kleur, 6–9 punten. Kan 5-kaart ruiten bevatten — dat staat letterlijk in de conventie. Je sluit het dossier. De valstrik is geneutraliseerd.",
+    },
+  },
+
+  // ── GRAND CAFÉ: slotpuzzel ──
+  {
+    id:10, location:"cafe3",
+    title:"Het Archief – Het Ontsleutelingsprotocol",
+    story:'Achter de laatste kast bevindt zich een verborgen terminal. Het scherm toont één vraag — het ontsleutelingsprotocol dat de complete code ontmantelt. Je contactpersoon fluistert: "Dit is de laatste verificatie. Als je dit fout hebt, wordt de missie afgebroken." Je handen trillen niet. Dat heb je jezelf aangeleerd.',
+    question:"Welke antwoorden in Montreal relay moeten gealerteerd worden?",
+    options:[
+      "Alleen 1♦ — want dat is het enige kunstmatige bod",
+      "1♦, 1♥ en 1♠",
+      "Alle antwoorden inclusief 1SA, 2SA en 3SA",
+      "Geen enkel antwoord — alle biedingen zijn natuurlijk",
+    ],
+    correct:0,
+    feedback:{
+      wrong:"De terminal knippert rood. \"Verificatie mislukt.\" Alleen 1♦ moet gealerteerd worden — dat is het enige kunstmatige bod in het systeem. 1♥, 1♠, 1SA, 2SA en 3SA zijn natuurlijke biedingen en hoeven niet gealerteerd te worden.",
+      right:"Groen licht. De terminal opent een verborgen doorgang. \"Verificatie geslaagd.\" Alleen 1♦ is kunstmatig en wordt gealerteerd. De rest zijn natuurlijke biedingen. De ontmanteling kan beginnen.",
+    },
+  },
+
+  // ── FINALE ──
+  {
+    id:11, location:"finale",
+    title:"De Ontmanteling – Eindspel",
+    story:'Je staat voor het centrale systeem. De timer loopt. 60 seconden. De code die de vijand heeft verspreid — de verkeerde interpretatie van Montreal relay — moet nu definitief worden geneutraliseerd. Eén vraag. De juiste definitie. Dan is het voorbij.',
+    question:"Wat is de kern van de Montreal relay-conventie in één zin?",
+    options:[
+      "Het is een openingssysteem waarbij 1♣ altijd een korte klaver belooft",
+      "Antwoorder geeft na een 1♣-opening direct aan of hij een 4- of 5-kaart hoge kleur heeft, of juist geen hoge kleur — via een vast antwoordschema",
+      "Opener biedt 1♣ als hij een hoge vierkaart heeft",
+      "Opener en antwoorder wisselen informatie uit over alle vier kleuren",
+    ],
+    correct:1,
+    feedback:{
+      wrong:"De timer loopt door. \"Onjuist.\" Montreal relay gaat uitsluitend over de antwoorden op 1♣ — nooit over de openingshand. Het antwoordschema toont of antwoorder een 4- of 5-kaart hoge kleur heeft, of geen hoge kleur. Probeer opnieuw.",
+      right:"De timer stopt. Stilte. Dan: een zachte piep. Groen licht. Systeem geneutraliseerd. \"Missie geslaagd,\" klinkt het door het oortje. \"Operatie Montreal is voltooid.\" Je leunt achterover. Buiten gaat de zon op.",
+    },
+  },
+];
+
+// ── STATE ──
+let state = { screen:"intro", step:0, selected:null, submitted:false, wrongAttempts:0, score:0 };
+
+// ── SUIT KLEUREN ──
+function suit(text, dark) {
+  return text.replace(/([♥♦♠♣])/g, (m, s) => {
+    if (s==="♥"||s==="♦") return `<span class="${dark?"srl":"sr"}">${s}</span>`;
+    if (s==="♠") return `<span class="${dark?"sbl":"sb"}">${s}</span>`;
+    if (s==="♣") return `<span class="${dark?"sgl":"sg"}">${s}</span>`;
+    return s;
+  });
+}
+function locIdx(id) { return LOCATIONS.findIndex(l=>l.id===id); }
+
+// ── RENDER ──
+function render() {
+  const app = document.getElementById("app");
+  if (state.screen==="intro") app.innerHTML = renderIntro();
+  else if (state.screen==="finish") app.innerHTML = renderFinish();
+  else app.innerHTML = renderGame();
+  bindEvents();
+}
+
+function renderIntro() {
+  return `<div class="center-card">
+    <div class="big-emoji">🕵️</div>
+    <h1 class="page-title">Operatie Montreal</h1>
+    <p class="page-sub">De vijand gebruikt bridgebiedingen als geheime code.<br>Jij bent de enige agent die de Montreal relay beheerst.<br>Ontcijfer de code. Neutraliseer de dreiging.</p>
+    <div class="info-box">
+      <strong>📋 Het antwoordschema (na 1♣-opening):</strong>
+      <table class="bid-table">
+        <tr><td>Pas</td><td>Minder dan 6 punten</td></tr>
+        <tr><td>1${suit("♦")}</td><td>1 of 2× een 4-kaart hoog (${suit("♥")} en/of ${suit("♠")}) ⚡</td></tr>
+        <tr><td>1${suit("♥")}</td><td>Minimaal 5-kaart harten</td></tr>
+        <tr><td>1${suit("♠")}</td><td>Minimaal 5-kaart schoppen</td></tr>
+        <tr><td>1SA</td><td>Geen hoge 4/5-kaart, 6–9 punten</td></tr>
+        <tr><td>2SA</td><td>Geen hoge 4/5-kaart, 10–11 punten</td></tr>
+        <tr><td>3SA</td><td>Geen hoge 4/5-kaart, 12+ punten</td></tr>
+      </table>
+      <div style="margin-top:8px;font-size:10px;color:#555">⚡ = alerteren (kunstmatig bod)</div>
+    </div>
+    <button class="btn-primary" id="btn-start">🕵️ Start de missie</button>
+  </div>`;
+}
+
+function renderFinish() {
+  const max = CHALLENGES.length * 3;
+  const pct = Math.round((state.score / max) * 100);
+  const medal = pct>=90?"🏅":pct>=70?"🎖️":"📋";
+  const rank = pct>=90?"Senior Agent":"Junior Agent";
+  return `<div class="center-card">
+    <div style="font-size:72px;margin-bottom:12px">${medal}</div>
+    <h1 class="page-title">Missie Voltooid</h1>
+    <div style="font-size:13px;color:#888;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">Classificatie: ${rank}</div>
+    <div class="score-big">${state.score} / ${max}</div>
+    <div class="score-pct">punten (${pct}%)</div>
+    <div class="summary-box">
+      <strong>🔐 Geheime code gekraakt — Montreal relay:</strong><br>
+      • 1${suit("♦")} = 1 of 2× een <strong>4-kaart</strong> hoog<br>
+      • 1${suit("♥")} = minimaal <strong>5-kaart</strong> harten<br>
+      • 1${suit("♠")} = minimaal <strong>5-kaart</strong> schoppen<br>
+      • 1SA = geen hoge 4/5-kaart, <strong>6–9</strong> punten<br>
+      • 2SA = geen hoge 4/5-kaart, <strong>10–11</strong> punten<br>
+      • 3SA = geen hoge 4/5-kaart, <strong>12+</strong> punten<br>
+      • Montreal relay gaat over de <strong>antwoorden</strong> — niet over de opening!
+    </div>
+    <button class="btn-primary" id="btn-restart">🔄 Nieuwe missie</button>
+  </div>`;
+}
+
+function renderGame() {
+  const ch = CHALLENGES[state.step];
+  const ci = locIdx(ch.location);
+  const isCorrect = state.selected === ch.correct;
+  const pct = Math.round((state.step / CHALLENGES.length) * 100);
+
+  const mapHtml = LOCATIONS.map((loc,i) => {
+    const isActive = i===ci, isDone = i<ci;
+    const op = (isActive||isDone)?1:0.35;
+    const bg = isDone?"#66bb6a":isActive?"#f4a019":"#ddd";
+    const sh = isActive?"0 0 0 3px rgba(244,160,25,0.4)":"none";
+    return `<div class="loc-stop" style="opacity:${op}">
+      <div class="loc-icon" style="background:${bg};box-shadow:${sh}">${loc.emoji}</div>
+      <div class="loc-label">${loc.name.split(" ").pop()}</div>
+    </div>`;
+  }).join("");
+
+  const optHtml = ch.options.map((opt,idx) => {
+    let cls = "option-btn";
+    if (state.submitted) {
+      if (idx===ch.correct) cls+=" correct";
+      else if (idx===state.selected&&!isCorrect) cls+=" wrong";
+    } else if (idx===state.selected) cls+=" selected";
+    const dis = state.submitted?"disabled":"";
+    return `<button class="${cls}" data-idx="${idx}" ${dis}>
+      <span class="option-letter">${["A","B","C","D"][idx]}.</span>${suit(opt)}
+    </button>`;
+  }).join("");
+
+  const fbHtml = state.submitted ? `<div class="feedback ${isCorrect?"correct":"wrong"}">
+    <strong>${isCorrect?"✅ Coach zegt:":"🎓 Coach zegt:"}</strong>
+    ${suit(isCorrect?ch.feedback.right:ch.feedback.wrong)}
+  </div>` : "";
+
+  let actionHtml;
+  if (!state.submitted) {
+    actionHtml = `<button class="btn-primary" id="btn-submit" ${state.selected===null?"disabled":""}>Controleer antwoord →</button>`;
+  } else if (isCorrect) {
+    const last = state.step+1>=CHALLENGES.length;
+    actionHtml = `<button class="btn-primary" id="btn-next">${last?"🏆 Claim de trofee!":"Volgende →"}</button>`;
+  } else {
+    actionHtml = `<button class="btn-primary btn-retry" id="btn-retry">🔄 Opnieuw proberen</button>`;
+  }
+
+  return `
+    <div class="topbar">
+      <span class="topbar-label">Uitdaging ${state.step+1} van ${CHALLENGES.length}</span>
+      <span class="score-badge">⭐ ${state.score} punten</span>
+    </div>
+    <div class="progress-label"><span>Voortgang</span><span>${state.step}/${CHALLENGES.length}</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="loc-map">${mapHtml}</div>
+    <div class="loc-header">
+      <span class="loc-header-emoji">${LOCATIONS[ci].emoji}</span>
+      <div>
+        <div class="loc-header-sub">Locatie</div>
+        <div class="loc-header-name">${LOCATIONS[ci].name}</div>
+      </div>
+    </div>
+    <h2 class="challenge-title">${ch.title}</h2>
+    <div class="story-box"><span class="story-label">📖 VERHAAL</span>${suit(ch.story)}</div>
+    <div class="question-box">${suit(ch.question, true)}</div>
+    <div class="options">${optHtml}</div>
+    ${fbHtml}
+    ${actionHtml}`;
+}
+
+// ── EVENTS ──
+function bindEvents() {
+  document.querySelectorAll(".option-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (state.submitted) return;
+      state.selected = parseInt(btn.dataset.idx);
+      render();
+    });
+  });
+
+  const s = document.getElementById("btn-start");
+  if (s) s.addEventListener("click", () => { state.screen="game"; render(); });
+
+  const sub = document.getElementById("btn-submit");
+  if (sub) sub.addEventListener("click", () => {
+    if (state.selected===null) return;
+    state.submitted = true;
+    const ch = CHALLENGES[state.step];
+    if (state.selected===ch.correct) state.score += Math.max(3-state.wrongAttempts,1);
+    else state.wrongAttempts++;
+    render();
+  });
+
+  const nxt = document.getElementById("btn-next");
+  if (nxt) nxt.addEventListener("click", () => {
+    if (state.step+1>=CHALLENGES.length) { state.screen="finish"; }
+    else { state.step++; state.selected=null; state.submitted=false; state.wrongAttempts=0; }
+    render();
+  });
+
+  const ret = document.getElementById("btn-retry");
+  if (ret) ret.addEventListener("click", () => { state.selected=null; state.submitted=false; render(); });
+
+  const rs = document.getElementById("btn-restart");
+  if (rs) rs.addEventListener("click", () => {
+    state={screen:"intro",step:0,selected:null,submitted:false,wrongAttempts:0,score:0};
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
